@@ -504,8 +504,8 @@ void SolverBase::update_delta_SUPG()
         double delta_SD = _parameters["delta_SD"];
         if (reynold > 1)
             //LZ Shihua Code
-            // delta = reynold*h*vbar* delta_SD;
-            delta = h / vbar * delta_SD;
+            delta = reynold*h*vbar* delta_SD;
+            //LZ delta = h / vbar * delta_SD;
         else
             delta = 0. ;
 
