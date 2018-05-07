@@ -1,0 +1,51 @@
+# The non-linear form F(v) for the hyperelastic part
+# Domain type: Media = 1, Adventitia = y
+# Boundary type: Dirichlet = 0, Gamma_s = 1, Gamma_I = 3, Gamma_M = 2 
+
+# Function spaces
+cell = triangle
+DG = FiniteElement("DG", cell, 0)
+V = VectorElement("Lagrange", cell, 1)
+Q = FiniteElement("Lagrange", cell, 1)
+Mixed = V*Q
+
+#hn  = FacetNormal(cell)     # Normal vector
+# Trial and test functions
+dv_p = TrialFunction(Mixed)     # Incremental displacement
+phi_q  = TestFunction(Mixed)      # Test function
+
+v_p = Coefficient(Mixed)
+(v, p) = split(v_p)
+(phi, q)  = split(phi_q) # Test function
+v0 = Coefficient(V)
+vm = Coefficient(V)
+sigmaN = Coefficient(V)
+delta_SUPG = Coefficient(DG)
+delta_PSPG = Coefficient(DG)
+
+rho_f = Constant(cell) 
+mu_f = Constant(cell) 
+mu_f_2 = 2 * mu_f #2*mu_f  
+dt = Constant(cell) 
+
+alpha1 = Constant(cell) 
+h = 2.0*Circumradius(cell)
+
+def epsilon(u):
+    return 0.5*(grad(u) + grad(u).T)
+
+F = rho_f*inner((v-v0)/dt, phi) * dx(3) \
+   + rho_f*inner( grad(v)*(v-vm), phi) *dx(3) \
+   + mu_f_2 * inner(epsilon(v), epsilon(phi)) *dx(1)\
+   - p * div(phi) *dx(3) - div(v) * q *dx(3)  \
+   - inner(sigmaN, phi)*ds(5)\
+   - h*h*alpha1*inner(grad(p),grad(q))*dx(3)  \
+   + delta_SUPG * inner( grad(phi) *(v - vm), rho_f*grad(v)*( v-vm)  ) *dx(3)#\
+   #+ delta_SUPG * inner( grad(phi) *(v0-vm) + grad(q) , rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
+   #+ delta_SUPG * inner( grad(phi) *(v - vm), rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
+   #- delta_SUPG * inner( grad(phi) *(v0 -vm), rho_f*grad(v0)*( v0-vm)  ) *dx(3) 
+   #+ delta_PSPG * inner( grad(q)/rho_f , rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
+   #- h*h*alpha1/dt*inner(v,grad(q))*dx(3) 
+
+
+J = derivative(F, v_p, dv_p)

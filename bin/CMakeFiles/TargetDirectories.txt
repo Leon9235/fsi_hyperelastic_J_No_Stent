@@ -1,0 +1,4 @@
+/home/fenics/shared/bin/CMakeFiles/rebuild_cache.dir
+/home/fenics/shared/bin/CMakeFiles/edit_cache.dir
+/home/fenics/shared/bin/CMakeFiles/3D.ex.dir
+/home/fenics/shared/bin/CMakeFiles/fsi.dir

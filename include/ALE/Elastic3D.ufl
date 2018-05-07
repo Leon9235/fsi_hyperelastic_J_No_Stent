@@ -1,0 +1,29 @@
+# Elastic Smoothing
+# Compile with ffc -l dolfin Elastic.ufl
+
+# Function spaces
+cell = tetrahedron
+V = VectorElement("CG", cell, 1)
+
+# Trial and test functions
+u = TrialFunction(V)
+v = TestFunction(V)
+f = Coefficient(V)
+
+# Coefficient Functions
+max_t = Constant(cell)
+min_t = Constant(cell)
+mu_s  = 1.0+(max_t-min_t)/CellVolume(cell)
+lmbda = 1.0+(max_t-min_t)/CellVolume(cell)
+
+# Prescribed variables
+def epsilon(v):
+    return 0.5*(grad(v) + grad(v).T)
+    
+def sigma(v):
+    return 2*mu_s*epsilon(v) + lmbda*tr(epsilon(v))*Identity(v.geometric_dimension())
+
+
+# Define variational form
+a = inner(sigma(u), epsilon(v))*dx
+L = inner(f,v)*dx

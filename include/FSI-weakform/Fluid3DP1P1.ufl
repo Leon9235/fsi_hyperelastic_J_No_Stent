@@ -1,0 +1,57 @@
+# The non-linear form F(v) for the hyperelastic part
+# Domain type: Media = 1, Adventitia = y
+#LZ Domain type: Fluid = 1, Structure = 2
+# Boundary type: Dirichlet = 0, Gamma_s = 1, Gamma_I = 3, Gamma_M = 2 
+#LZ Boundary type: Inflow = 3, Outflow = 5
+
+
+# Function spaces
+cell = tetrahedron
+DG = FiniteElement("DG", cell, 0)
+V = VectorElement("Lagrange", cell, 1)
+Q = FiniteElement("Lagrange", cell, 1)
+Qs = FiniteElement("Lagrange", cell, 1) #LZ Qs
+Mixed =  MixedElement([V, Q, Qs])
+
+hn  = FacetNormal(cell)     # Normal vector
+# Trial and test functions
+dv_p_p = TrialFunction(Mixed)     #LZ Incremental dv and dp in mixed form 
+phi_q_q  = TestFunction(Mixed)    #LZ Test function in mixed form
+
+v_p_p = Coefficient(Mixed)                 #LZ v and p in mixed form
+(v, p, ps) = split(v_p_p)                  #LZ Split v and p
+(phi, q, qs)  = split(phi_q_q)             #LZ Split testfunction
+
+v0 = Coefficient(V)                      #LZ v in previous timestep
+v1 = Coefficient(V) #LZ for second order time scheme
+vm = Coefficient(V)                      #LZ Mesh movement velocity
+sigmaN = Coefficient(V)                  #LZ Neumann boundary condition    
+delta_SUPG = Coefficient(DG)
+delta_PSPG = Coefficient(DG)
+
+rho_f = Constant(cell)
+mu_f = Constant(cell)
+mu_f_2 = 2.0 * mu_f #2*mu_f  
+dt = Constant(cell) 
+
+alpha1 = Constant(cell) 
+h = 2.0*Circumradius(cell)
+
+def epsilon(u):
+    return 0.5*(grad(u) + grad(u).T)
+    
+dxx = dx(204)+dx(214)+dx(210)
+dss = ds(203)
+
+F = rho_f*inner((3 * v- 4 * v0 +v1)/(2 * dt), phi) * dxx \
+   + rho_f*inner( grad(v)*(v-vm), phi) * dxx \
+   + mu_f_2 * inner(epsilon(v), epsilon(phi)) * dxx\
+   - p * div(phi) *dxx - div(v) * q * dxx  \
+   - mu_f * inner(grad(v).T * hn, phi) * dss\
+   + h * h /mu_f * alpha1*inner(grad(p),grad(q)) * dxx \
+   + delta_SUPG * inner( grad(phi) *(v - vm), rho_f*((3 * v- 4 * v0 +v1)/(2 * dt) +grad(v)*( v-vm) ) + grad(p)) *dxx
+   #+ delta_SUPG * inner( grad(phi) *(v - vm), rho_f*grad(v)*( v-vm)  ) * dxx#\ 
+   #+ delta_SUPG * inner( grad(phi) *(v - vm), rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
+   
+
+J = derivative(F, v_p_p, dv_p_p)

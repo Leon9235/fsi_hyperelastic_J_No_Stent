@@ -1,0 +1,63 @@
+# The non-linear form F(v) for the hyperelastic part
+# Domain type: Media = 1, Adventitia = y
+# Boundary type: Dirichlet = 0, Gamma_s = 1, Gamma_I = 3, Gamma_M = 2 
+
+# Function spaces
+cell = triangle
+DG = FiniteElement("DG", cell, 1)
+V = VectorElement("Lagrange", cell, 1)
+Q = FiniteElement("Lagrange", cell, 1)
+Mixed = V*Q
+
+# Trial and test functions
+dv_p = TrialFunction(Mixed)     # Incremental displacement
+phi_q  = TestFunction(Mixed)      # Test function
+
+v_p = Coefficient(Mixed)
+(v, p) = split(v_p)
+(phi, q)  = split(phi_q) # Test function
+
+v0 = Coefficient(V)
+u0 = Coefficient(V)
+
+rho_s = Coefficient(DG) 
+p_s = Coefficient(DG)        # Pressure determined by the chemicals 
+beta1 = Coefficient(DG)    # Coefficient of hyperelastic 
+beta2 = Coefficient(DG)    # Coefficient of hyperelastic 
+
+dt = Constant(cell) 
+
+hn  = FacetNormal(cell)     # Normal vector
+alpha1 = Constant(cell) 
+h = 2.0*Circumradius(cell)
+
+# Kinematics
+d = phi.geometric_dimension()
+I = Identity(d)                 # Identity tensor
+u = u0 + (v0 + v) *dt *.5
+F = I + grad(u)                 # Deformation gradient
+Finv = inv(F)                   # Inverse of deformation gradient
+B = F * F.T                     # Left Cauchy-Green tensor
+
+# Invariants of deformation tensors
+Ib = tr(B)
+J  = det(F)
+
+# the 1st Piola-Kirchhoff stress tensor
+P =  -p_s * cofac(F) + 2 *J* (beta1 + 2 * beta2 * (Ib -2)) * F
+#P =   + 2 * (beta1 + 2 * beta2 * (Ib -2)) * F
+
+#n = cofac(F) * hn
+#def epsilon(u):
+#    return 0.5*(grad(u) + grad(u).T)
+
+dxs = dx(1) + dx(2)
+
+F = rho_s*inner((v-v0)/dt, phi) * dxs \
+   + inner(P, grad(phi))* dxs \
+   + 1e-12*inner(p,q) *dxs
+
+
+J = derivative(F, v_p, dv_p)
+
+

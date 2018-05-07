@@ -1,0 +1,52 @@
+# The non-linear form F(v) for the hyperelastic part
+# Domain type: Media = 1, Adventitia = y
+# Boundary type: Dirichlet = 0, Gamma_s = 1, Gamma_I = 3, Gamma_M = 2 
+
+# Function spaces
+cell = triangle
+DG = FiniteElement("DG", cell, 1)
+V = VectorElement("Lagrange", cell, 1)
+Q = FiniteElement("Lagrange", cell, 1)
+Mixed = V*Q
+
+# Trial and test functions
+dv_p = TrialFunction(Mixed)     # Incremental displacement
+phi_q  = TestFunction(Mixed)      # Test function
+
+v_p = Coefficient(Mixed)
+(v, p) = split(v_p)
+(phi, q)  = split(phi_q) # Test function
+
+v0 = Coefficient(V)
+u0 = Coefficient(V)
+
+dt = Constant(cell) 
+rho_s = Constant(cell) 
+mu_s = Coefficient(DG) 
+nu_s = Constant(cell) 
+#lam_s = Constant(cell) 
+lam_s =  2*mu_s*nu_s/(1-2*nu_s)
+
+
+# Kinematics
+d = phi.geometric_dimension()
+I = Identity(d)                 # Identity tensor
+u = u0 + (v0 + v) *dt *.5
+
+# Invariants of deformation tensors
+def epsilon(u):
+    return 0.5*(grad(u) + grad(u).T)
+
+# the 1st Piola-Kirchhoff stress tensor
+P = lam_s * div(u) *I + 2*mu_s* epsilon(u) 
+
+dxs = dx(1) + dx(2)
+
+F = rho_s*inner((v-v0)/dt, phi) * dxs \
+   + inner(P, grad(phi))* dxs \
+   + 1e-12*inner(p,q) *dxs
+
+
+J = derivative(F, v_p, dv_p)
+
+

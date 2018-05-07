@@ -1,0 +1,76 @@
+# The non-linear form F(v) for the hyperelastic part
+# Domain type: Media = 1, Adventitia = y
+#LZ Domain type: Fluid = 1, Structure = 2
+# Boundary type: Dirichlet = 0, Gamma_s = 1, Gamma_I = 3, Gamma_M = 2 
+#LZ Boundary type: Inflow = 3, Outflow 5
+
+
+# Function spaces
+cell = tetrahedron
+DG = FiniteElement("DG", cell, 1)
+V = VectorElement("Lagrange", cell, 1)
+Q = FiniteElement("Lagrange", cell, 1)
+Qs = FiniteElement("Lagrange", cell, 1) #LZ Qs
+# Mixed = V*Q*Qs
+Mixed =  MixedElement([V, Q,Qs])
+
+# Trial and test functions
+dv_p_p = TrialFunction(Mixed)     # Incremental displacement
+phi_q_q  = TestFunction(Mixed)      # Test function
+
+v_p_p = Coefficient(Mixed)
+(v, p, ps) = split(v_p_p)
+(phi, q, qs)  = split(phi_q_q) # Test function
+
+v0 = Coefficient(V)
+u0 = Coefficient(V)
+a0 = Coefficient(V)		   # For Newmark Scheme
+
+
+rho_s = Coefficient(DG) 
+p_s = Coefficient(DG)      # Pressure determined by the chemicals 
+beta1 = Coefficient(DG)    # Coefficient of hyperelastic 
+beta2 = Coefficient(DG)    # Coefficient of hyperelastic 
+beta1Func = Coefficient(DG)    # Functional Coefficient of hyperelastic 
+beta2Func = Coefficient(DG)    # Functional Coefficient of hyperelastic 
+dt = Constant(cell) 
+dt2 = 2.0/dt               #LZ For Newmark Scheme
+
+
+hn  = FacetNormal(cell)     # Normal vector
+alpha2 = Constant(cell) 
+h = 2.0*Circumradius(cell)
+
+# Kinematics
+d = phi.geometric_dimension()
+I = Identity(d)                 # Identity tensor
+u = u0 + (v0 + v) *dt *.5
+F = I + grad(u)                 # Deformation gradient
+Finv = inv(F)                   # Inverse of deformation gradient
+B = F * F.T                     # Left Cauchy-Green tensor
+
+# Invariants of deformation tensors
+Ib = tr(B)
+J  = det(F)
+
+# the 1st Piola-Kirchhoff stress tensor
+P =  -ps * cofac(F) + 2  * (beta1Func + 2 * beta2Func * (Ib -3)) * F
+#P =  -ps * cofac(F) + 2  * (beta1 + 2 * beta2 * (Ib -3)) * F
+#P =  -p_s * cofac(F) + 2 * (beta1 + 2 * beta2 * (Ib -3)) * F
+#n = cofac(F) * hn
+#def epsilon(u):
+#    return 0.5*(grad(u) + grad(u).T)
+
+#LZ dxs = dx(1) + dx(2)
+dxx = dx(218)
+
+F = rho_s*inner((v-v0) * dt2 -a0, phi) * dxx \
+   + inner(P, grad(phi))* dxx \
+   + (J - dt/dt) * qs * dxx \
+   + h * h * alpha2 * inner(grad(ps),grad(qs)) * dxx
+   #+ 1e-12*inner(p,qs) *dxx
+
+
+J = derivative(F, v_p_p, dv_p_p)
+
+
