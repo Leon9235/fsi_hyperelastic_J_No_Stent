@@ -70,15 +70,15 @@ class TestFSI: public SolverBase
                     int n = *__t/0.8;
                     double dt = *__t-n*0.8;
                     double v= 0;
-                    // if (dt<0.4)
-                    //     v = 0.5 * (sin( 2*DOLFIN_PI/0.4 *dt - DOLFIN_PI/2.0) +1.0 )/2.0 ;
-                    // else 
-                    //     v = 0.01 * (sin( 2*DOLFIN_PI/0.4 *(dt-0.4) - DOLFIN_PI/2.0) +1.0 )/2.0 ;
-                    
-                    if (dt<0.2)
-                        v = 0.5 * (sin( 2*DOLFIN_PI/0.4 *dt - DOLFIN_PI/2.0) +1.0 )/2.0 ;
+                    if (dt<0.4)
+                         v = 0.5 * (sin( 2*DOLFIN_PI/0.4 *dt - DOLFIN_PI/2.0) +1.0 )/2.0 ;
                     else 
-                        v = 0.5 * (sin( 2*DOLFIN_PI/0.4 *0.2 - DOLFIN_PI/2.0) +1.0 )/2.0 ;
+                         v = 0.01 * (sin( 2*DOLFIN_PI/0.4 *(dt-0.4) - DOLFIN_PI/2.0) +1.0 )/2.0 ;
+                    
+                    //if (dt<0.2)
+                    //    v = 0.5 * (sin( 2*DOLFIN_PI/0.4 *dt - DOLFIN_PI/2.0) +1.0 )/2.0 ;
+                    //else 
+                    //    v = 0.5 * (sin( 2*DOLFIN_PI/0.4 *0.2 - DOLFIN_PI/2.0) +1.0 )/2.0 ;
                     
                     dolfin_assert(ufc_cell.local_facet >= 0);
                     Cell cell(__mesh, ufc_cell.index);
@@ -119,7 +119,7 @@ class TestFSI: public SolverBase
             public:
                 void eval(Array<double>& values, const Array<double>& x, const
                         ufc::cell& ufc_cell) const {
-                    values[0] = 17.4e+4;
+                    values[0] = 17.4e+2;
                     //values[0] = 1.0e+07 * (6.0183 * x[2] * x[2] + 3.1837  * x[2] + 0.4212); //LZ beta1*0.01
                     //LZ values[0] = 1.0e+07 * (6.0731 * x[2] * x[2] + 3.2126 * x[2] + 0.4249); //LZ beta1*0.001
 
@@ -136,7 +136,7 @@ class TestFSI: public SolverBase
             public:
                 void eval(Array<double>& values, const Array<double>& x, const
                         ufc::cell& ufc_cell) const {
-                    values[0] = 188.1e+4; //LZ Const
+                    values[0] = 188.1e+2; //LZ Const
                     //values[0] = 1.0e+08 * (6.5060 * x[2] * x[2] +3.4417 * x[2] + 0.4554); //LZ beta2*0.01
                     //LZ values[0] = 1.0e+08 * (6.5652 * x[2] * x[2] +3.4730 * x[2] + 0.4593); //LZ beta2*0.001
 

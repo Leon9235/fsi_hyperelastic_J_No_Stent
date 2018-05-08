@@ -17,7 +17,7 @@
         <parameter key="alpha" type="double" value="1e-5" />
         <parameter key="alpha2" type="double" value="1e-2" />
         <parameter key="timestep" type="double" value="0.01" />
-        <parameter key="endtime" type="double" value="0.400" />
+        <parameter key="endtime" type="double" value="0.800" />
         <parameter key="iteration_tolerance" type="double" value="1e-06" />
         <parameter key="maximum_iterations" type="int" value="20" />
         <parameter key="FSnewtonitrmax" type="int" value="20" />
@@ -26,6 +26,6 @@
         <parameter key="ElasticModel" type="string" value="Hyper" />
         <parameter key="ElasticModelCoeff" type="string" value="nonChemical" />
         <parameter key="MeshNumber" type="int" value="4" />
-        <parameter key="sample_number" type="int" value="40" />
+        <parameter key="sample_number" type="int" value="80" />
     </parameters>
 </dolfin>
