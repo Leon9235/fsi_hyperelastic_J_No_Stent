@@ -498,23 +498,21 @@ void SolverBase::update_delta_SUPG()
             vbar = sqrt(v_mean[0]*v_mean[0] + v_mean[1]*v_mean[1] + v_mean[2]*v_mean[2]);
         else
             vbar = sqrt(v_mean[0]*v_mean[0] + v_mean[1]*v_mean[1] );
-        double reynold = (double) (*_rho_f) * vbar * h / (2.0 * (double) (*_mu_f));
+        double reynold = (double) (*_rho_f) * vbar * h / (2 * (double) (*_mu_f));
         double delta;
 
         double delta_SD = _parameters["delta_SD"];
         if (reynold > 1)
-            //LZ Shihua Code
+            //delta = h / (2 * vbar)*(1-1./reynold) ;
             delta = reynold*h*vbar* delta_SD;
-            //LZ delta = h / vbar * delta_SD;
         else
             delta = 0. ;
 
-        // if (reynold > 3)
-        //     delta = h / (2.0 * vbar) ;
-        // else
-        //     delta = h*h * (double)(*_rho_f) /(12.0 * (double)(*_mu_f)) ;
-        // delta *= delta_SD;ma 
-          
+        /*if (reynold > 3)
+          delta = h / (2 * vbar) ;
+          else
+          delta = h*h/12*(double)(*_rho_f) /(double)(*_mu_f) ;
+          */
         //if(delta>0)
         //std::cout << "h :" <<h<<"  vbar:  "<<vbar<<"   delta: "<<delta<<std::endl;
         //LZ std::cout << "reynold :" << reynold<<std::endl;

@@ -46,12 +46,15 @@ dss = ds(203)
 F = rho_f*inner((3 * v- 4 * v0 +v1)/(2 * dt), phi) * dxx \
    + rho_f*inner( grad(v)*(v-vm), phi) * dxx \
    + mu_f_2 * inner(epsilon(v), epsilon(phi)) * dxx\
-   - p * div(phi) *dxx - div(v) * q * dxx  \
+   - p * div(phi) *dxx + div(v) * q * dxx  \
    - mu_f * inner(grad(v).T * hn, phi) * dss\
    + h * h /mu_f * alpha1*inner(grad(p),grad(q)) * dxx \
-   + delta_SUPG * inner( grad(phi) *(v - vm), rho_f*grad(v)*( v-vm)  ) * dxx#\ 
-   #+ delta_SUPG * inner( grad(phi) *(v - vm), rho_f*((3 * v- 4 * v0 +v1)/(2 * dt) +grad(v)*( v-vm) ) + grad(p)) *dxx
+   + delta_SUPG * inner( grad(phi) *(v - vm), rho_f*grad(v)*( v-vm)  ) * dxx#\
+   #+ delta_SUPG * inner( grad(phi) *(v0-vm) + grad(q) , rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
    #+ delta_SUPG * inner( grad(phi) *(v - vm), rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
-   
+   #- delta_SUPG * inner( grad(phi) *(v0 -vm), rho_f*grad(v0)*( v0-vm)  ) *dx(3) 
+   #+ delta_PSPG * inner( grad(q)/rho_f , rho_f*((v-v0)/dt +grad(v)*( v-vm) ) + grad(p)) *dx(3) 
+   #- h*h*alpha1/dt*inner(v,grad(q))*dx(3) 
+
 
 J = derivative(F, v_p_p, dv_p_p)
